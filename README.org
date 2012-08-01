@@ -1,0 +1,56 @@
+* togetter.el
+
+** Overview
+
+   [[http://togetter.com/][togetter]] を Emacs から覗くための emacs lisp です。
+
+** Requirement
+
+   - Emacs 24.1 で動作確認してます
+     - helm
+     - org
+     - xml
+
+** Initialize
+
+   1. ~togetter.el~ を load-path の通った場所に置く
+   2. ~(require 'togetter-el)~
+
+** Togetter 記事の ID を指定して読む
+
+   ~M-x togetter~ を実行すると、「Togetter id:」プロンプトが表示されるので
+   読みたい記事の ID (togetter.com/li/** の部分です) を入力して ENTER を押します。
+
+   [[https://lh4.googleusercontent.com/-EnPxBVLFrBw/UBlUorIsnSI/AAAAAAAACQI/Rypt-zXFNSc/s572/togetter-el-M-x-togetter.jpg]]
+
+   すると、view-mode + org-mode で記事が表示されます。
+
+   [[https://lh4.googleusercontent.com/-uCO13Y19vXQ/UBlUpCiiXVI/AAAAAAAACQQ/Q2Hm4ScO4a4/s572/togetter-el-show.jpg]]
+
+   - view-mode なので、閉じたい時は「q」ですぐ抜けれます！
+   - org-mode なので、リンク上で ~M-x org-open-at-point~ を実行すればそのリンクがブラウザで確認できます。
+
+** 注目一覧、新着一覧から選択して読む
+
+   ~helm~ を利用することで [[http://togetter.com/hot][注目のまとめ]] や [[http://togetter.com/recent][新着のまとめ]] からお好きな記事が選択できます
+
+   ~M-x helm-togetter-hot~ or ~M-x helm-togetter-recent~
+
+   [[https://lh5.googleusercontent.com/-tSAL1MuiTYY/UBlUoqYVcpI/AAAAAAAACQE/zEgDzmrrbhA/s572/togetter-el-helm.jpg]]
+
+   読みたい記事上で ENTER を押すと、その記事が表示されます。
+   また、ブラウザで読みたいという方は、開きたい記事名上で Tab を押して 
+   「View togetter on Browser」を選択すると、既定ブラウザで開くことが可能です。
+
+   [[https://lh6.googleusercontent.com/-8_83Kg1-FSU/UBlUomxm27I/AAAAAAAACQA/yIGMiPyMakI/s572/togetter-el-helm-action.jpg]]
+
+
+** 今後いれるとしたら
+
+   - 「もっと読む」以降の Tweet が今のところ見れないので、それの取得
+   - [[https://github.com/kiwanami/emacs-cacoo/][emacs-cacoo]] を利用して画像の表示
+   - おなかすいた
+
+** LICENSE
+
+   ~togetter.el~ に記載
