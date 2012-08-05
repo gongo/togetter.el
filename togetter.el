@@ -73,7 +73,7 @@ by [[%s][%s]] at [[%s][%s]]
        (togetter:lrtrim node)))
    tweet-node " "))
 
-(defun togetter:get-tweet-block (item)
+(defun togetter:tweet-item-to-string (item)
   (let* ((tweet (cddar (togetter:find-tag-by-class item "tweet")))
          (info  (xml-get-children
                  (car (togetter:find-tag-by-class item "status_right")) 'a))
@@ -89,46 +89,66 @@ by [[%s][%s]] at [[%s][%s]]
                 name-link name-label status-link status-date)
       "")))
 
-(defun togetter:parse-tweet-box (&optional buffer)
-  "Get \"li.list_item\" nodes"
-  (if (null buffer) (setq buffer togetter->tmp-buffer-name))
-  (with-current-buffer (get-buffer buffer)
-    (let (begin end xml)
-      (goto-char (point-max))
-      (setq end (search-backward "<div class=\"social_box"))
-      (setq begin (search-backward "<div class=\"tweet_box"))
-      (setq xml (xml-parse-region begin end))
-      (xml-get-children (car (xml-get-children (car xml) 'ul)) 'li))))
+(defun togetter:tweet-box-to-string (list)
+  (mapconcat 'togetter:tweet-item-to-string list "\n"))
 
-(defun togetter:parse-title (&optional buffer)
-  "Get title.
+(defun togetter:parse-tweet-box ()
+  "Parse \"li.list_item\" tags in current buffer."
+  (let (begin end xml)
+    (goto-char (point-max))
+    (setq end (search-backward "<div class=\"social_box"))
+    (setq begin (search-backward "<div class=\"tweet_box"))
+    (setq xml (xml-parse-region begin end))
+    (xml-get-children (car (xml-get-children (car xml) 'ul)) 'li)))
 
-全体を xml-parse-region しようかと思ったが、
-xml error になるので自力で
-"
-  (if (null buffer) (setq buffer togetter->tmp-buffer-name))
-  (with-current-buffer (get-buffer buffer)
-    (let (begin end xml)
-      (goto-char (point-min))
-      (setq begin (search-forward "<title>"))
-      (search-forward "</head>")
-      (setq end (search-backward "</title>"))
-      (buffer-substring-no-properties begin end))))
+(defun togetter:parse-title (uri)
+  "\
+Parse <title> tag in current buffer,
+and convert to link string (org-mode format).
+
+  example:
+
+  (let ((uri \"http://togetter.com/li/248076\"))
+    (with-temp-buffer
+      (togetter:get-page uri (current-buffer))
+      (togetter:parse-title uri)))
+
+  ;; => \"[[http://togetter.com/li/248076][#地獄の美夢沢 - Togetter]]\""
+  (let (begin end title)
+    (goto-char (point-min))
+    (setq begin (search-forward "<title>"))
+    (search-forward "</head>")
+    (setq end (search-backward "</title>"))
+    (setq title (buffer-substring-no-properties begin end))
+    (format "[[%s][%s]]" uri title)))
+
+(defun togetter:parse-more-box ()
+  ""
+)
 
 (defun togetter:get-page (uri &optional buffer)
   (if (null buffer) (setq buffer togetter->tmp-buffer-name))
-  (ignore-errors (kill-buffer buffer))
+  (with-current-buffer (get-buffer-create buffer)
+    (let ((inhibit-read-only t))
+      (erase-buffer)))
   (call-process "curl" nil `(,buffer nil) nil
                 "-f"
                 "-X" "GET" uri))
 
-(defun togetter:show (uri title items)
+(defun togetter:parse (uri &optional buffer)
+  (if (null buffer) (setq buffer togetter->tmp-buffer-name))
+  (with-current-buffer buffer
+    (togetter:get-page uri buffer)
+    (list (togetter:parse-title uri)
+          (togetter:parse-tweet-box)
+          (togetter:parse-more-box))))
+
+(defun togetter:show (title items more)
   (with-current-buffer (get-buffer-create togetter->buffer-name)
       (setq buffer-read-only nil)
       (erase-buffer)
-      (insert (format "[[%s][%s]]\n\n" uri title))
-      (dolist (i items)
-        (insert (togetter:get-tweet-block i)))
+      (insert (concat title "\n\n"))
+      (insert (togetter:tweet-box-to-string items))
       (goto-char (point-min))
       (setq buffer-read-only t)
       (org-mode)
@@ -136,8 +156,11 @@ xml error になるので自力で
   (switch-to-buffer togetter->buffer-name))
 
 (defun togetter:run (uri)
-  (togetter:get-page uri)
-  (togetter:show uri (togetter:parse-title) (togetter:parse-tweet-box)))
+  (let* ((result (togetter:parse uri))
+         (title  (nth 0 result))
+         (items  (nth 1 result))
+         (more   (nth 2 result)))
+    (togetter:show title items more)))
 
 (defun togetter (id)
   (interactive "sTogetter id: ")
@@ -145,7 +168,7 @@ xml error になるので自力で
 
 (defun togetter:make-rss-list (uri)
   (let (rss channel items)
-    (togetter:get-page uri togetter->tmp-buffer-name)
+    (togetter:get-page uri)
     (setq rss
           (with-current-buffer (get-buffer togetter->tmp-buffer-name)
             (car (xml-parse-region (point-min) (point-max)))))
