@@ -30,6 +30,16 @@
    - view-mode なので、閉じたい時は「q」ですぐ抜けれます！
    - org-mode なので、リンク上で ~M-x org-open-at-point~ を実行すればそのリンクがブラウザで確認できます。
 
+   また、バッファの最後に「残りを読む」がある場合
+
+   [[https://lh6.googleusercontent.com/-0lLk2l8FgMk/UCUKb8bJNAI/AAAAAAAACR0/nyHZHUPg4q0/s596/togetter-el-more-string.jpg]]
+
+   「残りを読む」上で Enter or クリックすると、以降の Tweet がロードされて続きが楽しめます！
+
+   [[https://lh5.googleusercontent.com/-9tM08qosF8s/UCUKbzPASAI/AAAAAAAACR4/GdSIQe71t-s/s606/togetter-el-more-loading.jpg]]
+
+   ※ -nw 環境だと反応しないかもしれません。
+
 ** 注目一覧、新着一覧から選択して読む
 
    ~helm~ を利用することで [[http://togetter.com/hot][注目のまとめ]] や [[http://togetter.com/recent][新着のまとめ]] からお好きな記事が選択できます
@@ -47,7 +57,6 @@
 
 ** 今後いれるとしたら
 
-   - 「もっと読む」以降の Tweet が今のところ見れないので、それの取得
    - [[https://github.com/kiwanami/emacs-cacoo/][emacs-cacoo]] を利用して画像の表示
    - おなかすいた
 
