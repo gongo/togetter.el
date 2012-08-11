@@ -239,10 +239,11 @@ If not found, return nil."
 
 (defun togetter:show (title items more)
   (with-current-buffer (get-buffer-create togetter->buffer-name)
+    (view-mode-disable)
     (erase-buffer)
     (insert title "\n\n" (togetter:tweet-box-to-string items))
     (org-mode)
-    (view-mode)
+    (view-mode-enable)
     (when more
       (let ((inhibit-read-only t))
         (insert more)))
