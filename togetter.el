@@ -170,10 +170,12 @@ and convert to link string (org-mode format).
     (delete-region (car region) (cdr region))
     (insert togetter->more-loading-str)
 
-    ;; loading start
+    ;; loading
     (with-current-buffer togetter->tmp-buffer-name
       (togetter:get-page uri togetter->tmp-buffer-name)
-      (setq xml (car (xml-parse-region (point-min) (point-max))))
+      (goto-char (point-min))
+      (setq xml (car (xml-parse-region (point-min)
+                                       (search-forward "</ul>"))))
       (setq tweet-items (xml-get-children xml 'li))
       (setq more (togetter:parse-more-tweet-box)))
 
@@ -212,13 +214,37 @@ If not found, return nil."
       (setq begin (search-backward "<a "))
       (setq atag (car (xml-parse-region begin end)))
 
-      (setq loadstr (concat "[" (nth 2 atag) "]"))
+      (setq loadstr (concat "[ " (nth 2 atag) " ]"))
       (setq onclick (xml-get-attribute atag 'onclick))
       (string-match "tgtr.moreTweets(\\([0-9]+\\),\\([0-9]+\\)" onclick)
       (setq page-id  (match-string 1 onclick))
       (setq page-num (match-string 2 onclick))
-
       (togetter:add-togetter-more-text-property loadstr page-id page-num))))
+
+(defun togetter:parse-more-pagination ()
+  "\
+Search div.pagenation in current buffer,
+and return text that load more tweet box in current buffer if click.
+
+If not found, return nil."
+  (let (begin end atag href page-id page-num)
+    (goto-char (point-min))
+    (when (and (search-forward "div class=\"pagenation" nil t)
+               (search-forward "rel='next'" nil t))
+      (setq end (search-forward "</a>"))
+      (setq begin (search-backward "<a "))
+      (setq atag (car (xml-parse-region begin end)))
+
+      (setq href (togetter:get-href-from atag))
+      (string-match "/li/\\([0-9]+\\)\\?page=\\([0-9]+\\)" href)
+      (setq page-id  (match-string 1 href))
+      (setq page-num (match-string 2 href))
+      (togetter:add-togetter-more-text-property "[ 続きを読む ]" page-id page-num))))
+
+(defun togetter:create-more-load-text ()
+  (or (togetter:parse-more-tweet-box)
+      (togetter:parse-more-pagination)
+      nil))
 
 (defun togetter:get-page (uri &optional buffer)
   (if (null buffer) (setq buffer togetter->tmp-buffer-name))
@@ -231,11 +257,11 @@ If not found, return nil."
 
 (defun togetter:parse (uri &optional buffer)
   (if (null buffer) (setq buffer togetter->tmp-buffer-name))
-  (with-current-buffer buffer
+  (with-current-buffer (get-buffer-create buffer)
     (togetter:get-page uri buffer)
     (list (togetter:parse-title uri)
           (togetter:parse-tweet-box)
-          (togetter:parse-more-tweet-box))))
+          (togetter:create-more-load-text))))
 
 (defun togetter:show (title items more)
   (with-current-buffer (get-buffer-create togetter->buffer-name)
