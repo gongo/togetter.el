@@ -190,7 +190,7 @@ and convert to link string (org-mode format).
   (lexical-let ((id _id) (page _page))
     (let ((map (make-sparse-keymap))
           (func (lambda () (interactive) (togetter:start-more-tweet-load id page))))
-      (define-key map [return] func)
+      (define-key map (kbd "l") func)
       (define-key map [mouse-1] func)
       (define-key map [down-mouse-1] 'mouse-set-point)
       (add-text-properties 0 (length str)
