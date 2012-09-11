@@ -1,5 +1,8 @@
-;;; cui-about-me.el -- control for cui-about.me
-;;
+;;; togetter.el -- Togetter view
+
+;; Author: Wataru MIYAGUNI (gonngo _at_ gmail.com)
+;; Keywords: togetter
+
 ;; MAHALO License (based on MIT License)
 ;;
 ;; Copyright (c) 2012 Wataru MIYAGUNI (gonngo _at_ gmail.com)
@@ -23,10 +26,17 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
+;;; Commentary:
+
+;; This program is a viewer for Togetter <http://togetter.com> .
+
 ;;; Usage:
+
 ;;
+;; (require 'togetter-el)
 ;;
 
+;;; Code:
 
 (eval-when-compile (require 'cl))
 (require 'xml)
